@@ -1,0 +1,44 @@
+﻿#pragma kernel UpdateParticles
+
+struct WindData
+{
+	float3 originalPosition;
+	float3 currentPosition;
+	float time;
+};
+
+float particleLifetime;
+float particleSpeed;
+float deltaTime;
+
+Texture3D MapTexture;
+
+SamplerState samplerMapTexture;
+
+RWStructuredBuffer<WindData> particles;
+RWStructuredBuffer<float4> particlePositions; //xyz = position, w = speed
+
+
+[numthreads(128,1,1)]
+void UpdateParticles(uint3 id : SV_DispatchThreadID)
+{
+	float time = particles[id.x].time + deltaTime;
+
+	float positionReset = floor(time / particleLifetime); // 0 if time < lifetime, 1 if time > lifetime
+
+	particles[id.x].time = time % particleLifetime;
+
+	float3 uvs = lerp(particles[id.x].currentPosition, particles[id.x].originalPosition, positionReset);
+	float3 mapSample = MapTexture.SampleLevel(samplerMapTexture, uvs, 0);
+	mapSample = mapSample * 2 - 1;
+	mapSample = float3(0, mapSample.x, mapSample.y); 
+
+	float3 newPos = (uvs + mapSample * deltaTime * particleSpeed) % 1;
+
+	particles[id.x].currentPosition = newPos;
+	
+	float oldVelocity = particlePositions[id.x].w;
+	float newVelocity = length(mapSample);
+	newVelocity = lerp(oldVelocity, newVelocity, .1);
+	particlePositions[id.x] = float4(particles[id.x].currentPosition, newVelocity);
+}
