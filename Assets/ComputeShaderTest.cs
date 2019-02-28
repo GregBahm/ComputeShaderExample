@@ -9,8 +9,10 @@ public class ComputeShaderTest : MonoBehaviour
     public ComputeShader ParticleUpdater;
     public Material ParticleMaterial;
     public int ParticleCount;
-
-    public float StartSpeed = 4;
+    [Range(0, .1f)]
+	public float ParticleSize;
+	public float VelocityScale;
+    
     public float ParticleLifetime = 1;
     public float ParticleSpeed = .1f;
 
@@ -18,8 +20,11 @@ public class ComputeShaderTest : MonoBehaviour
     private int updateParticlesKernel;
 
     private ComputeBuffer particlesBuffer;
-    private const int particleStride = sizeof(float) * 3 /* Original Position */ + sizeof(float) * 3 /* Current Position */ + sizeof(float) /* Time */;
-    private const int particlePositionsStride = sizeof(float) * 3 /*  Position */ + sizeof(float) /* Speed */;
+    private const int particleStride = sizeof(float) * 3 //Original Position 
+        + sizeof(float) * 3 // Current Position 
+        + sizeof(float); //Time
+    private const int particlePositionsStride = sizeof(float) * 3 //Position 
+        + sizeof(float); //Speed
     private ComputeBuffer quadPoints;
     private ComputeBuffer particlePositionsBuffer;
     private const int quadStride = 12;
@@ -89,12 +94,21 @@ public class ComputeShaderTest : MonoBehaviour
         int numberofGroups = Mathf.CeilToInt((float)ParticleCount / GroupSize);
         ParticleUpdater.Dispatch(updateParticlesKernel, numberofGroups, 1, 1);
     }
+	
+	void OnDestroy()
+	{
+		quadPoints.Dispose();
+		particlesBuffer.Dispose();
+		particlePositionsBuffer.Dispose();
+	}
      
     void OnRenderObject()
     {
         ParticleMaterial.SetMatrix("masterTransform", transform.localToWorldMatrix);
         ParticleMaterial.SetBuffer("particles", particlePositionsBuffer);
         ParticleMaterial.SetBuffer("quadPoints", quadPoints);
+		ParticleMaterial.SetFloat("_CardSize", ParticleSize);
+		ParticleMaterial.SetFloat("_VelocityScale", VelocityScale);
         ParticleMaterial.SetPass(0);
         Graphics.DrawProcedural(MeshTopology.Triangles, 6, ParticleCount);
     }

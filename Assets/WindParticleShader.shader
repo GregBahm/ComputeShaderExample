@@ -2,11 +2,6 @@
 {
 	Properties
 	{
-		_CubeSize("Cube Size", Vector) = (1,1,1)
-		_CardSize("Card Size", Float) = 1
-		_Offset("Offset", Vector) = (1,1,1,1)
-		_Scale("Scale", Vector) = (1,1,1,1)
-		_VelocityScale("Velocity Scale", Float) = 1
 
 	}
 	SubShader
