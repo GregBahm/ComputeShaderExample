@@ -110,6 +110,6 @@ public class ComputeShaderTest : MonoBehaviour
 		ParticleMaterial.SetFloat("_CardSize", ParticleSize);
 		ParticleMaterial.SetFloat("_VelocityScale", VelocityScale);
         ParticleMaterial.SetPass(0);
-        Graphics.DrawProcedural(MeshTopology.Triangles, 6, ParticleCount);
+        Graphics.DrawProceduralNow(MeshTopology.Triangles, 6, ParticleCount);
     }
 }
